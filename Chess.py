@@ -264,10 +264,16 @@ class Chess:
             # -----------------------------------
     
     def makeMove(self, move):
-        figures = eval("self." + self.players.players[self.players.hasMove].color + "Figs")
-        for figure in figures:
+        playerFigure           = None
+        playerFigureMoved      = False
+        otherPlayerFigureTaken = False
+        
+        playerId      = self.players.hasMove
+        playerColor   = self.players.players[playerId].color
+        playerFigures = eval("self." + playerColor + "Figs")
+        for figure in playerFigures:
 
-            # Check if current player has a figure at old_coord2D (move[0]) and if it's possible to move it to the new_coord2D (move[1])  
+            # Check if current player has a figure at old_coord2D (move[0]) and if it's possible to move it to the new_coord2D (move[1])
             if(figure.coord2D == move[0] and figure.makeMove(move[1], self.coord2D_to_index2D(move[1]))):
                 
                 # Update tile at new_coord2D
@@ -282,19 +288,44 @@ class Chess:
                 figure.moved = True
                 
                 print("made move: with " + figure.color + " " + figure.typee + ", from " + str(move[0]) + ", to " + str(move[1]))
+                
+                playerFigure      = figure
+                playerFigureMoved = True
+                
+                break
+            
+        if(not playerFigureMoved):
+            print("can't make move - stage 1")
+            return False
+        
+        otherPlayerId      = abs(self.players.hasMove - 1)
+        otherPlayerColor   = self.players.players[otherPlayerId].color
+        otherPlayerFigures = eval("self." + otherPlayerColor + "Figs")
+        for otherPlayerFigure in otherPlayerFigures:
+                
+            # Check if with that move the other player's piece was taken
+            if(playerFigure.coord2D == otherPlayerFigure.coord2D):
+                    
+                print(playerColor + " took " + otherPlayerColor + "'s " + type(otherPlayerFigure).__name__ + " at " + str(otherPlayerFigure.coord2D))    
+                    
+                # Remove that figure from list
+                otherPlayerFigures.remove(otherPlayerFigure)
+                
+                otherPlayerFigureTaken = True
 
                 # DEV util
                 # -----------------------------------
-                # for row in self.board.tiles:
-                #     for tile in row:
-                #         tile.print()
-                #     print()
+                # print("white figures: " + str(len(self.whiteFigs)))
+                # print("black figures: " + str(len(self.blackFigs)))
                 # -----------------------------------
-
+                
                 return True
-            
-        print("can't make move")
-        return False
+        
+        if(not otherPlayerFigureTaken):
+            print("can't make move - stage 2")
+            return False
+        else:
+            return True
 
     def startChess(self):
         
@@ -321,46 +352,24 @@ class Chess:
                     
             # Clear terminal
             os.system('cls' if os.name == 'nt' else 'clear')
-                    
+            
+            # Check if "move" is a string like "a3:b3"
             if(len(move) == 5):
-                isMoveFormLongEnough = True
-
-                if(move[2] == ":"):
-                    isDelimeterColon = True
-                else:
-                    isDelimeterColon = False
-
-                if(move[0:2] != move[3:5]):
-                    isNewPosDifferent = True
-                else:
-                    isNewPosDifferent = False
-
-                if(move[0] in self.board.letters):
-                    isFirstSymOldPosSmallLetter = True
-                else:
-                    isFirstSymOldPosSmallLetter = False
-
-                if(move[3] in self.board.letters):
-                    isFirstSymNewPosSmallLetter = True
-                else:
-                    isFirstSymNewPosSmallLetter = False
-
-                if(int(move[1]) in self.board.indexes18):
-                    isSecondSymOldPosNumber = True
-                else:
-                    isSecondSymOldPosNumber = False
-
-                if(int(move[4]) in self.board.indexes18):
-                    isSecondSymNewPosNumber = True
-                else:
-                    isSecondSymNewPosNumber = False
-            else:
-                isMoveFormLongEnough = False
+                isMoveFormLongEnough        = True
                 
+                isDelimeterColon            = True if(move[2] == ":")                       else False
+                isNewPosDifferent           = True if(move[0:2] != move[3:5])               else False
+                isFirstSymOldPosSmallLetter = True if(move[0] in self.board.letters)        else False
+                isFirstSymNewPosSmallLetter = True if(move[3] in self.board.letters)        else False
+                isSecondSymOldPosNumber     = True if(int(move[1]) in self.board.indexes18) else False
+                isSecondSymNewPosNumber     = True if(int(move[4]) in self.board.indexes18) else False
+            else:
+                isMoveFormLongEnough        = False
+            
             # Log
             if(self.isLogOn):
                 if(isMoveFormLongEnough == False):
-                    print("your move should be entered as \'a2:a3\' -> is " + move)
+                    print("your move should be entered as \'a2:a3\' -> is \'" + move + "\'")
                 else:
                     if(isDelimeterColon == False):
                         print("delimeter must be a colon -> is " + move[2])
@@ -374,9 +383,7 @@ class Chess:
                         print("old position: number must be in range 1 ~ 8")
                     if(isSecondSymNewPosNumber == False):
                         print("new position: number must be in range 1 ~ 8")
-                        
-            # Check if "move" is a string like "a3:b3"
-            # Check if move can be made
+
             if(
                isMoveFormLongEnough        and
                isDelimeterColon            and
@@ -386,11 +393,29 @@ class Chess:
                isSecondSymOldPosNumber     and
                isSecondSymNewPosNumber
               ):
-                old_index2D = tuple((move[0], int(move[1])))
-                new_index2D = tuple((move[3], int(move[4])))
-                tupled_move = tuple((old_index2D, new_index2D))
-                if(self.makeMove(tupled_move)):
-                    self.players.changeTurn()
+                old_coord2D = tuple((move[0], int(move[1])))
+                new_coord2D = tuple((move[3], int(move[4])))
+                tupled_move = tuple((old_coord2D, new_coord2D))
+                
+                # Check if move destination is an aviable tile
+                if(self.board.getTileByCoord2D(new_coord2D).figColor != self.players.players[self.players.hasMove].color):
+                    isCurrentPlayersFigureOnDestTile = False
+                else:
+                    isCurrentPlayersFigureOnDestTile = True
+                    
+                # Log
+                if(self.isLogOn):
+                    if(isCurrentPlayersFigureOnDestTile != False):
+                        print("you can't move your figure onto tile occupied by another one of your figures")
+                    else:
+                        print("")
+                        
+                if(
+                   not isCurrentPlayersFigureOnDestTile
+                  ):
+                    # If move can be made
+                    if(self.makeMove(tupled_move)):
+                        self.players.changeTurn()   
 
 
 game = Chess(isLogOn = True)

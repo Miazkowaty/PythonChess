@@ -7,7 +7,7 @@ class Rook(Figure):
         typee = "R"
         Figure.__init__(self, coord2D, index2D, typee, color)
 
-    def move(self, coord2D, index2D):
+    def makeMove(self, coord2D, index2D):
         move_x = index2D[0] - self.index2D[0]
         move_y = index2D[1] - self.index2D[1]
         if(
