@@ -88,7 +88,9 @@ class Players:
 
 class Chess:
     
-    def __init__(self):
+    def __init__(self, isLogOn):
+        self.isLogOn = isLogOn
+        
         self.board   = Board()
         self.players = Players()
         
@@ -327,41 +329,52 @@ class Chess:
                     isDelimeterColon = True
                 else:
                     isDelimeterColon = False
-                    print("delimeter must be a colon -> is " + move[2])
 
                 if(move[0:2] != move[3:5]):
                     isNewPosDifferent = True
                 else:
                     isNewPosDifferent = False
-                    print("new position must be different from old one")
 
                 if(move[0] in self.board.letters):
                     isFirstSymOldPosSmallLetter = True
                 else:
                     isFirstSymOldPosSmallLetter = False
-                    print("old position: letter must be in range a ~ h")
 
                 if(move[3] in self.board.letters):
                     isFirstSymNewPosSmallLetter = True
                 else:
                     isFirstSymNewPosSmallLetter = False
-                    print("new position: letter must be in range a ~ h")
 
                 if(int(move[1]) in self.board.indexes18):
                     isSecondSymOldPosNumber = True
                 else:
                     isSecondSymOldPosNumber = False
-                    print("old position: number must be in range 1 ~ 8")
 
                 if(int(move[4]) in self.board.indexes18):
                     isSecondSymNewPosNumber = True
                 else:
                     isSecondSymNewPosNumber = False
-                    print("new position: number must be in range 1 ~ 8")
             else:
                 isMoveFormLongEnough = False
-                print("your move should be entered as \'a2:a3\' -> is " + move)
-
+                
+            # Log
+            if(self.isLogOn):
+                if(isMoveFormLongEnough == False):
+                    print("your move should be entered as \'a2:a3\' -> is " + move)
+                else:
+                    if(isDelimeterColon == False):
+                        print("delimeter must be a colon -> is " + move[2])
+                    if(isNewPosDifferent == False):
+                        print("new position must be different from old one")
+                    if(isFirstSymOldPosSmallLetter == False):
+                        print("old position: letter must be in range a ~ h")
+                    if(isFirstSymNewPosSmallLetter == False):
+                        print("new position: letter must be in range a ~ h")
+                    if(isSecondSymOldPosNumber == False):
+                        print("old position: number must be in range 1 ~ 8")
+                    if(isSecondSymNewPosNumber == False):
+                        print("new position: number must be in range 1 ~ 8")
+                        
             # Check if "move" is a string like "a3:b3"
             # Check if move can be made
             if(
@@ -380,5 +393,5 @@ class Chess:
                     self.players.changeTurn()
 
 
-game = Chess()
+game = Chess(isLogOn = True)
 game.startChess()
