@@ -168,6 +168,9 @@ class Chess:
         
         verFrameSym   = "@"
         horFrameSym   = "@"
+        
+        verDistFromFrame = 3
+        horDistFromFrame = 1
         # -----------------------------------
         
         # Only odd numbers allowed
@@ -179,8 +182,11 @@ class Chess:
            (tileHeight >= 5)
           ):
             
+            print("\n", end = "")
+            
             # Top-horizontal bar
             # -----------------------------------
+            print(" " * (verDistFromFrame + 1), end = "")
             for hor in range(self.board.dim):
                 for length in range(tileLength):
                     print(horFrameSym, end = "")
@@ -194,6 +200,15 @@ class Chess:
             
             for ver in range(self.board.dim):
                 for height in range(tileHeight):
+                    
+                    # When in the center of the row of tiles:
+                    #   print row number (1 ~ 8)
+                    #   else print whitespace
+                    if(height == math.floor(tileHeight / 2)):
+                        print(str(self.board.dim - ver), end = "")
+                    else:
+                        print(" ", end = "")
+                    print(" " * verDistFromFrame, end = "")
                     
                     # Left-vertical bar
                     # -----------------------------------
@@ -257,11 +272,26 @@ class Chess:
             
             # Bot-horizontal bar
             # -----------------------------------
+            print(" " * (verDistFromFrame + 1), end = "")
             for hor in range(self.board.dim):
                 for length in range(tileLength):
                     print(horFrameSym, end = "")
             print(horFrameSym * 2, end = "\n")
             # -----------------------------------
+            
+            # When in the center of the col of tiles:
+            #   print row designation (a ~ h)
+            #   else print whitespace
+            print("\n" * horDistFromFrame, end = "")
+            print(" " * (verDistFromFrame + 2), end = "")
+            for hor in range(self.board.dim):
+                for length in range(tileLength):
+                    if(length == math.floor(tileLength / 2)):
+                        print(self.board.letters[hor], end = "")
+                    else:
+                        print(" ", end = "")
+            
+            print("\n" * 2, end = "")
     
     def makeMove(self, move):
         playerFigure           = None
